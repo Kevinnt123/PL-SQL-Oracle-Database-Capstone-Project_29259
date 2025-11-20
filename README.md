@@ -66,7 +66,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Reporting: System generates monthly supplier performance reports via cursors.
 
-**MIS Functions:** 💻
+**MIS Functions** 💻:
 
 •	Automates data validation and exception handling
 
@@ -74,7 +74,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Tracks supplier performance via predefined KPIs (e.g., on-time delivery rate, pending payments)
 
-**Organizational Impact:** 🏢
+**Organizational Impact** 🏢:
 
 •	Reduces manual errors
 
@@ -89,6 +89,11 @@ This system is designed for use by a company's Procurement and Finance departmen
 •	Forecasting payment schedules and cash flow
 
 •	Identifying frequently delayed suppliers for contract reviews
+
+**BPMN diagram**
+
+<img width="682" height="968" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/d52e8c16-8a5d-481f-9fd7-fe2a7ec5cbff" />
+
 
 
 
