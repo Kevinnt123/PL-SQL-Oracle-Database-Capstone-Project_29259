@@ -137,3 +137,6 @@ The design is intended to be in at least 3NF to minimize data duplication and en
 **2NF:** Non-key attributes depend on the full Primary Key (e.g., in deliveries, quantity depends on the full composite key of the order, if applicable).
 
 **3NF:** Non-key attributes depend only on the primary key, eliminating transitive dependencies (e.g., all supplier contact info resides only in the suppliers table, linked by supplier_id FK in other tables).
+
+# PHASE IV: Database Creation 🗄️
+
