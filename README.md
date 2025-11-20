@@ -94,6 +94,28 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 <img width="682" height="968" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/d52e8c16-8a5d-481f-9fd7-fe2a7ec5cbff" />
 
+# PHASE III: Logical Model Design
+
+# The tables
+
+**The system has four  tables:**
+
+**1. Suppliers:** Stores basic information about each business partner.
+         
+  - supplier_id (PK), supplier_name, contact_number, email, address
+
+**2. Products:** Details of items purchased, linked to the main supplier.
+ 
+  - product_id (PK), product_name, unit_price, supplier_id( FK)
+
+**3. Deliveries:** Tracks procurement events, dates, and current delivery status.
+ 
+  - payment_id (PK), supplier_id (FK), product_id (FK), quantity, expected_date, delivery_date, status
+         
+**4. Payments:** Records financial transactions and their scheduled/actual completion dates.
+ 
+  - payment_id (PK), supplier_id (FK), amount, due_date, payment_date, status
+
 
 
 
