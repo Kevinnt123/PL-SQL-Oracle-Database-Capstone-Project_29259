@@ -96,7 +96,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 # PHASE III: Logical Model Design
 
-# The tables
+# The tables 📋
 
 **The system has four  tables:**
 
@@ -116,6 +116,22 @@ This system is designed for use by a company's Procurement and Finance departmen
  
   - payment_id (PK), supplier_id (FK), amount, due_date, payment_date, status
 
+# Relationships 🔗
 
+Suppliers (1) to Deliveries (A single Supplier can be responsible for multiple Deliveries over time.) 
 
+Products (1) to Deliveries  (A single Product can be included in many different Deliveries.)
 
+Suppliers (1) to Payments (A single Supplier will receive many Payments over the life of the business relationship.)
+
+# Entity-Relationship Diagram 🔷
+
+<img width="612" height="586" alt="image" src="https://github.com/user-attachments/assets/795eb306-4dc4-42d8-9194-92668161aa6f" />
+
+# Normalization
+
+The design is intended to be in at least 3NF to minimize data duplication and ensure data integrity
+
+**1NF:** All attributes are atomic (e.g., supplier_id and supplier_name are distinct).
+
+**2NF:** Non-key attributes depend on the full Primary Key (e.g., in deliveries, quantity depends on the full composite key of the order, if applicable).
