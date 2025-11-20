@@ -66,7 +66,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Reporting: System generates monthly supplier performance reports via cursors.
 
-**MIS Functions:**💻
+**MIS Functions:** 💻
 
 •	Automates data validation and exception handling
 
@@ -74,7 +74,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Tracks supplier performance via predefined KPIs (e.g., on-time delivery rate, pending payments)
 
-**Organizational Impact:**🏢
+**Organizational Impact:** 🏢
 
 •	Reduces manual errors
 
