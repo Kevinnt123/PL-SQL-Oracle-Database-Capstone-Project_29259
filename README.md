@@ -1,4 +1,4 @@
-# PL-SQL-_Oracle-_Database-_Capstone-_Project_29259
+# PL/SQL Oracle Database Capstone Project
 
 # 📋 What’s This Project About? 🤔
 This project is a Supplier Payment and Delivery Monitoring System built with an Oracle database and PL/SQL. It automates the tracking of supplier orders, delivery dates, and payment schedules. The system automatically flags delayed shipments and overdue payments using database triggers and procedures. It also generates performance reports to help businesses identify reliable suppliers. The goal is to eliminate manual errors, ensure timely payments, and improve overall supply chain efficiency.
@@ -51,4 +51,26 @@ This system is designed for use by a company's Procurement and Finance departmen
 •	Track payment cycle times and forecast cash flow.
 
 •	Identify top-performing and underperforming suppliers for strategic decision-making.
+
+# PHASE II: Business Process Modeling
+
+**Main component:**
+
+•	Order Placement: Procurement Officer creates a purchase order.
+
+•	Delivery & Recording: Supplier delivers goods; system records delivery date and expected payment schedule.
+
+•	Payment Processing: Finance Officer validates and processes payments.
+
+•	Monitoring & Alerts: System automatically flags delayed deliveries or overdue payments using PL/SQL triggers.
+
+•	Reporting: System generates monthly supplier performance reports via cursors.
+
+**MIS Functions:**
+
+•	Automates data validation and exception handling
+
+•	Provides real-time alerts for delays and overdue payments
+
+•	Tracks supplier performance via predefined KPIs (e.g., on-time delivery rate, pending payments)
 
