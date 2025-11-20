@@ -126,6 +126,8 @@ Suppliers (1) to Payments (A single Supplier will receive many Payments over the
 
 # Entity-Relationship Diagram 🔷
 
+Supplier Payment and Delivery Monitoring System - ER diagram
+
 <img width="612" height="586" alt="image" src="https://github.com/user-attachments/assets/795eb306-4dc4-42d8-9194-92668161aa6f" />
 
 # Normalization
