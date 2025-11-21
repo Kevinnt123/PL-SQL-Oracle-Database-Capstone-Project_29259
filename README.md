@@ -154,3 +154,4 @@ creating and configuring oracle pluggable database
 
 **•	Tool:** Oracle Enterprise Manager (OEM) to check performance
 
+<img width="624" height="474" alt="image" src="https://github.com/user-attachments/assets/00b8e2b5-81b6-4ae4-8f86-14ff8bc291d8" />
