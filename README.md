@@ -118,11 +118,11 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 # Relationships 🔗
 
-Suppliers (1) to Deliveries (A single Supplier can be responsible for multiple Deliveries over time.) 
+✅ Suppliers (1) to Deliveries (A single Supplier can be responsible for multiple Deliveries over time.) 
 
-Products (1) to Deliveries  (A single Product can be included in many different Deliveries.)
+✅ Products (1) to Deliveries  (A single Product can be included in many different Deliveries.)
 
-Suppliers (1) to Payments (A single Supplier will receive many Payments over the life of the business relationship.)
+✅ Suppliers (1) to Payments (A single Supplier will receive many Payments over the life of the business relationship.)
 
 # Entity-Relationship Diagram 🔷
 
