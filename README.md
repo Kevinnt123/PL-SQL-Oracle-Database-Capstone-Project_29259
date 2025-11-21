@@ -142,3 +142,15 @@ The design is intended to be in at least 3NF to minimize data duplication and en
 
 # PHASE IV: Database Creation 🗄️
 
+creating and configuring oracle pluggable database
+
+# details
+
+**•	Name:** Wed_29259_Kevin_SupplierMS_db
+
+**•	Password:** Kevin
+
+**•	Access:** Super Admin (full control)
+
+**•	Tool:** Oracle Enterprise Manager (OEM) to check performance
+
