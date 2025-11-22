@@ -124,6 +124,8 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 ✅ Suppliers (1) to Payments (A single Supplier will receive many Payments over the life of the business relationship.)
 
+✅ Product to Supplier: (One supplier can provide many products.)
+
 # Entity-Relationship Diagram 🔷
 
 Supplier Payment and Delivery Monitoring System - ER diagram
@@ -155,3 +157,69 @@ creating and configuring oracle pluggable database
 **•	Tool:** Oracle Enterprise Manager (OEM) to check performance
 
 <img width="624" height="474" alt="image" src="https://github.com/user-attachments/assets/00b8e2b5-81b6-4ae4-8f86-14ff8bc291d8" />
+
+Real-World Fact: Database monitoring tools like Oracle Enterprise Manager help procurement teams detect payment delays and supplier issues 40% faster, reducing operational costs by 25% in manufacturing firms.
+
+<img width="1911" height="870" alt="Screenshot 2025-11-22 103847" src="https://github.com/user-attachments/assets/71535934-c2d1-4577-a63c-db1607ffc673" />
+
+# 🛠️ PHASE V: Table Implementation & Data Insertion
+
+# Creating Tables
+
+Here's is how I built my database
+
+         CREATE TABLE suppliers (
+             supplier_id NUMBER(5) PRIMARY KEY,
+             supplier_name VARCHAR2(100) NOT NULL,
+             contact_number VARCHAR2(15),
+             email VARCHAR2(100),
+             address VARCHAR2(150)
+         );
+         
+         CREATE TABLE products (
+             product_id NUMBER(5) PRIMARY KEY,
+             product_name VARCHAR2(100) NOT NULL,
+             unit_price DECIMAL(10, 2) NOT NULL CHECK (unit_price > 0),
+             supplier_id NUMBER(5) REFERENCES suppliers(supplier_id)
+         );
+         
+         CREATE TABLE deliveries (
+             delivery_id NUMBER(5) PRIMARY KEY,
+             supplier_id NUMBER(5) REFERENCES suppliers(supplier_id),
+             product_id NUMBER(5) REFERENCES products(product_id),
+             quantity NUMBER(8),
+             expected_date DATE,
+             delivery_date DATE,
+             status VARCHAR2(20) 
+                 CHECK (status IN ('Pending', 'Delayed', 'Delivered', 'Cancelled'))
+         );
+         
+         CREATE TABLE payments (
+             payment_id NUMBER(5) PRIMARY KEY,
+             supplier_id NUMBER(5) REFERENCES suppliers(supplier_id),
+             amount DECIMAL(10, 2) NOT NULL CHECK (amount >= 0),
+             due_date DATE,
+             payment_date DATE,
+             status VARCHAR2(20)
+                 CHECK (status IN ('Due', 'Overdue', 'Paid', 'Partial'))
+         );
+
+<img width="1919" height="1007" alt="Screenshot 2025-11-22 110403" src="https://github.com/user-attachments/assets/007b87a2-ff4d-4347-9287-2393625aa7ba" />
+
+# Adding Sample Data 
+
+I added example info to test the system:
+
+         INSERT INTO suppliers VALUES (101, 'Alpha Supplies Ltd', '0788111222', 'alpha@supply.com', 'Kigali, KG 1');
+         INSERT INTO suppliers VALUES (102, 'Beta Electronics', '0788333444', 'beta@elec.com', 'Musanze, MS 2');
+         
+         INSERT INTO products VALUES (1, 'Office Paper', 50.00, 101);
+         INSERT INTO products VALUES (2, 'Laptop Charger', 250.00, 102);
+         
+         INSERT INTO deliveries VALUES (1001, 101, 1, 500, DATE '2025-12-01', DATE '2025-11-29', 'Delivered');
+         INSERT INTO deliveries VALUES (1002, 102, 2, 50, DATE '2025-12-05', NULL, 'Pending'); 
+         
+         INSERT INTO payments VALUES (1, 101, 25000.00, DATE '2025-12-10', DATE '2025-12-08', 'Paid');
+         INSERT INTO payments VALUES (2, 102, 12500.00, DATE '2025-11-20', NULL, 'Due');
+
+
