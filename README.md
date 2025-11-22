@@ -158,7 +158,7 @@ creating and configuring oracle pluggable database
 
 <img width="624" height="474" alt="image" src="https://github.com/user-attachments/assets/00b8e2b5-81b6-4ae4-8f86-14ff8bc291d8" />
 
-Real-World Fact: Database monitoring tools like Oracle Enterprise Manager help procurement teams detect payment delays and supplier issues 40% faster, reducing operational costs by 25% in manufacturing firms.
+Real-World Fact: Database monitoring tools like Oracle Enterprise Manager help procurement teams detect payment delays and supplier issues 40% faster, reducing operational costs in manufacturing firms.
 
 <img width="1911" height="870" alt="Screenshot 2025-11-22 103847" src="https://github.com/user-attachments/assets/71535934-c2d1-4577-a63c-db1607ffc673" />
 
@@ -222,4 +222,7 @@ I added example info to test the system:
          INSERT INTO payments VALUES (1, 101, 25000.00, DATE '2025-12-10', DATE '2025-12-08', 'Paid');
          INSERT INTO payments VALUES (2, 102, 12500.00, DATE '2025-11-20', NULL, 'Due');
 
+<img width="1914" height="990" alt="Screenshot 2025-11-22 112230" src="https://github.com/user-attachments/assets/279ba4cf-2653-423c-99ea-dd1d1ebb98ff" />
+
+Real-World Fact: Adding realistic supplier and delivery test data helps manufacturing companies identify payment bottlenecks and delivery issues before system deployment, reducing procurement errors and improving supplier relationship management.
 
