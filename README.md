@@ -132,7 +132,7 @@ Supplier Payment and Delivery Monitoring System - ER diagram
 
 <img width="612" height="586" alt="image" src="https://github.com/user-attachments/assets/795eb306-4dc4-42d8-9194-92668161aa6f" />
 
-# Normalization
+# 📘 Database Normalization
 
 The design is intended to be in at least 3NF to minimize data duplication and ensure data integrity
 
@@ -225,4 +225,6 @@ I added example info to test the system:
 <img width="1914" height="990" alt="Screenshot 2025-11-22 112230" src="https://github.com/user-attachments/assets/279ba4cf-2653-423c-99ea-dd1d1ebb98ff" />
 
 Real-World Fact: Adding realistic supplier and delivery test data helps manufacturing companies identify payment bottlenecks and delivery issues before system deployment, reducing procurement errors and improving supplier relationship management.
+
+# ⚙️ Phase VI: Database Interaction & Transactions
 
