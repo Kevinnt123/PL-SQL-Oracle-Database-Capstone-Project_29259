@@ -168,6 +168,7 @@ Real-World Fact: Database monitoring tools like Oracle Enterprise Manager help p
 
 Here's is how I built my database
 
+```SQL
          CREATE TABLE suppliers (
              supplier_id NUMBER(5) PRIMARY KEY,
              supplier_name VARCHAR2(100) NOT NULL,
@@ -203,13 +204,14 @@ Here's is how I built my database
              status VARCHAR2(20)
                  CHECK (status IN ('Due', 'Overdue', 'Paid', 'Partial'))
          );
-
+```
 <img width="1919" height="1007" alt="Screenshot 2025-11-22 110403" src="https://github.com/user-attachments/assets/007b87a2-ff4d-4347-9287-2393625aa7ba" />
 
 # Adding Sample Data 
 
 I added example info to test the system:
 
+```SQL
          INSERT INTO suppliers VALUES (101, 'Alpha Supplies Ltd', '0788111222', 'alpha@supply.com', 'Kigali, KG 1');
          INSERT INTO suppliers VALUES (102, 'Beta Electronics', '0788333444', 'beta@elec.com', 'Musanze, MS 2');
          
@@ -221,7 +223,7 @@ I added example info to test the system:
          
          INSERT INTO payments VALUES (1, 101, 25000.00, DATE '2025-12-10', DATE '2025-12-08', 'Paid');
          INSERT INTO payments VALUES (2, 102, 12500.00, DATE '2025-11-20', NULL, 'Due');
-
+```
 <img width="1914" height="990" alt="Screenshot 2025-11-22 112230" src="https://github.com/user-attachments/assets/279ba4cf-2653-423c-99ea-dd1d1ebb98ff" />
 
 Real-World Fact: Adding realistic supplier and delivery test data helps manufacturing companies identify payment bottlenecks and delivery issues before system deployment, reducing procurement errors and improving supplier relationship management.
