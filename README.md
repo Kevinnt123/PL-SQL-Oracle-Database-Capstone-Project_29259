@@ -230,3 +230,21 @@ Real-World Fact: Adding realistic supplier and delivery test data helps manufact
 
 # ⚙️ Phase VI: Database Interaction & Transactions
 
+The Supplier Monitoring System is dynamic! It uses PL/SQL to enable staff to safely add, change, and check real-time supplier data.
+
+# DML (Data Manipulation Language)
+```SQL
+UPDATE suppliers SET email = 'beta.electronics.new@email.com' WHERE supplier_id = 102;
+```
+<img width="1908" height="869" alt="Screenshot 2025-12-02 113518" src="https://github.com/user-attachments/assets/407c0ed3-e4d5-44bc-8704-6b7a60d0a6cd" />
+
+DDL (Data Definition Language)
+```SQL
+CREATE TABLE supplier_reviews (
+    review_id NUMBER PRIMARY KEY,
+    supplier_id NUMBER REFERENCES suppliers(supplier_id)
+);
+
+DROP TABLE supplier_reviews;
+```
+<img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/cec0cecf-092f-49ce-b739-0ac48957dfe1" />
