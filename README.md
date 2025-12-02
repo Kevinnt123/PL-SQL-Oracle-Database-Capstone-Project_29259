@@ -238,7 +238,7 @@ UPDATE suppliers SET email = 'beta.electronics.new@email.com' WHERE supplier_id 
 ```
 <img width="1908" height="869" alt="Screenshot 2025-12-02 113518" src="https://github.com/user-attachments/assets/407c0ed3-e4d5-44bc-8704-6b7a60d0a6cd" />
 
-DDL (Data Definition Language)
+# DDL (Data Definition Language)
 ```SQL
 CREATE TABLE supplier_reviews (
     review_id NUMBER PRIMARY KEY,
@@ -333,6 +333,7 @@ BEGIN
 END;
 /
 ```
+<img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/bfa797fa-8cbe-45a6-8bd1-d4c120d10423" />
 
 # Function Implementation: Total Amount Paid to a Supplier
 
@@ -449,3 +450,160 @@ END;
 
 # 🔒 PHASE VII: Advanced Programming & Auditing
 
+This phase implements the advanced PL/SQL features—Triggers—to ensure the system is automated, secure, and tracks every significant action. These triggers act like silent, automatic guards for the data, critical for monitoring your high-value supplier transactions.
+
+# Why It’s Needed 🌟
+
+* The supply chain and financial operations involve tight deadlines and strict rules. We need clever rules to:
+
+* Automate Status Updates: Instantly detect and flag delayed Deliveries without manual checks.
+
+* Prevent Financial Changes: Block changes to Payments on non-working days (weekdays/holidays) to ensure data stability during high-volume periods.
+
+* Ensure Accountability: Track every modification to core data, like Supplier information. These rules are called Triggers, and they act like magic guards protecting the system!
+
+# DDL for Required Tables
+
+To support the security and restriction logic, we define the holidays and audit_logs tables.
+
+Creation of Audit Log Table To track who did what and when, we first ensure the mandatory audit_logs table is present.
+```sql
+CREATE TABLE audit_logs (
+    audit_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id VARCHAR2(50),
+    action_time TIMESTAMP DEFAULT SYSTIMESTAMP,
+    operation VARCHAR2(50),
+    status VARCHAR2(20)
+);
+```
+Table Holidays This table stores dates when system modifications should be restricted
+```sql
+CREATE TABLE holidays (
+    holiday_date DATE PRIMARY KEY,
+    description VARCHAR2(100)
+);
+```
+<img width="1912" height="1003" alt="image" src="https://github.com/user-attachments/assets/4eaaf356-ed9c-4f03-9f99-9c456346a119" />
+
+# Smart Rule (Trigger): Automatic Delivery Status Update
+
+The most critical business rule for this project is identifying a Delayed Delivery. This simple trigger runs before any insertion or update on the deliveries table to automatically check the dates and update the status column.
+```sql
+CREATE OR REPLACE TRIGGER trg_check_delivery_status
+BEFORE INSERT OR UPDATE ON deliveries
+FOR EACH ROW
+BEGIN
+    IF :NEW.delivery_date IS NULL AND :NEW.expected_date < TRUNC(SYSDATE) THEN
+        :NEW.status := 'Delayed';
+    
+    ELSIF :NEW.delivery_date IS NOT NULL THEN
+        :NEW.status := 'Delivered';
+        
+    ELSE
+        :NEW.status := 'Pending';
+    END IF;
+END;
+/
+```
+This trigger directly implements the core business logic of Phase I automatically detecting and flagging delayed deliveries using simple date comparison.
+
+# Tracking Every Change (Auditing Trigger on Suppliers) 🛡️
+
+This trigger logs all changes made to the central suppliers table. Any time a supplier's contact information is added, updated, or deleted, an entry is written to the audit_logs table.
+```sql
+CREATE OR REPLACE TRIGGER trg_audit_supplier_changes
+AFTER INSERT OR UPDATE OR DELETE ON suppliers
+FOR EACH ROW
+DECLARE
+    v_operation VARCHAR2(50);
+BEGIN
+    IF INSERTING THEN
+        v_operation := 'INSERT_SUPPLIER';
+    ELSIF UPDATING THEN
+        v_operation := 'UPDATE_SUPPLIER';
+    ELSIF DELETING THEN
+        v_operation := 'DELETE_SUPPLIER';
+    END IF;
+    
+    INSERT INTO audit_logs(user_id, operation, status)
+    VALUES (USER, v_operation, 'Logged');
+END;
+/
+```
+<img width="1910" height="1003" alt="image" src="https://github.com/user-attachments/assets/c74884e2-0110-4f8e-aba4-4d63aabf975c" />
+
+This ensures accountability. If a supplier's record is altered, managers can check the audit_logs to see who made the change and when.
+
+# Log Denied Actions (Logging Function)
+
+This function is crucial for logging when an attempt to modify data (e.g., during a weekday block) is rejected by the system's security rules
+```sql
+CREATE OR REPLACE FUNCTION log_denied_action(p_action VARCHAR2)
+RETURN VARCHAR2 IS
+BEGIN
+    INSERT INTO audit_logs(user_id, operation, status)
+    VALUES (USER, p_action, 'Denied');
+    RETURN 'Logged';
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 'Failed to log: ' || SQLERRM;
+END;
+/
+```
+# Testing the Triggers: Let’s See If They Work! 🧪
+
+We test the triggers to prove they are correctly applying the business rules like superheroes.
+
+# Testing the Automatic Delivery Status Trigger
+
+1. **Test 1 (Delayed):** Insert a new delivery where the expected date was yesterday, but the actual delivery date is null.
+
+* **Action:**
+```sql
+INSERT INTO deliveries (delivery_id, supplier_id, product_id, quantity, expected_date, delivery_date)
+VALUES (3001, 102, 2, 10, TRUNC(SYSDATE - 1), NULL);
+```
+<img width="1919" height="1004" alt="image" src="https://github.com/user-attachments/assets/1f269121-50a7-4901-989f-093c7956a413" />
+
+Result: The status column in the deliveries table is automatically set to 'Delayed' by the trigger.
+
+2. **Test 2 (Delivered):** Insert a new delivery that has already arrived.
+
+*** Action:**
+```sql
+INSERT INTO deliveries (delivery_id, supplier_id, product_id, quantity, expected_date, delivery_date)
+VALUES (3002, 101, 1, 50, TRUNC(SYSDATE + 7), TRUNC(SYSDATE));
+```
+<img width="1919" height="1009" alt="image" src="https://github.com/user-attachments/assets/b5d19fdb-a156-46ea-a820-1cc72558eec0" />
+
+The status column is automatically set to 'Delivered' by the trigger.
+
+# Testing the Auditing Trigger (on Suppliers)
+
+1. Action: Update a supplier's contact number.
+```sql
+UPDATE suppliers
+SET contact_number = '0789123456'
+WHERE supplier_id = 101;
+```
+2. Check the Audit Log:
+```sql
+SELECT user_id, operation, status, action_time FROM audit_logs;
+```
+<img width="1919" height="1005" alt="image" src="https://github.com/user-attachments/assets/24eab523-b445-4534-8dd6-0827802f7df2" />
+
+**Result:** The log will show a new entry: USER_ID, OPERATION: UPDATE_SUPPLIER, STATUS: Logged, at the current timestamp, proving the action was recorded.
+
+# Tracking System 🛡️
+
+* What It Tracks: Who did what, when, and if it was blocked on key tables (suppliers, payments, deliveries).
+
+*  Why It Matters: Keeps the supplier payment and monitoring system safe from operational mistakes and ensures full accountability for financial and logistical data.
+
+# What We Learned from Testing:
+
+✅ The Delivery Status rule works—it automatically flags delayed items, preventing manual errors.
+
+✅ Every change to a Supplier record is tracked, so nothing gets lost.
+
+✅ The system can log denied attempts (using the function), ensuring a complete security record.
