@@ -248,3 +248,204 @@ CREATE TABLE supplier_reviews (
 DROP TABLE supplier_reviews;
 ```
 <img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/cec0cecf-092f-49ce-b739-0ac48957dfe1" />
+
+# Analytical Task: Tracking Supplier Payments
+
+Problem: How much has a specific supplier been paid over time, and what is the running total of those payments?
+
+Solution: Used a window function (SUM() OVER...) to group payments by supplier and compute a cumulative total, helping the finance team track total expenditure per vendor.
+```SQL
+SELECT 
+    supplier_id,
+    payment_id,
+    amount,
+    SUM(amount) OVER (PARTITION BY supplier_id ORDER BY payment_date) AS running_total
+FROM payments
+ORDER BY supplier_id, payment_date;
+```
+
+<img width="1919" height="1009" alt="image" src="https://github.com/user-attachments/assets/bba42003-cc82-48fb-b14e-bf1a734372b2" />
+
+This query is vital for financial auditing. It instantly shows the cumulative value of business conducted with a supplier, which is critical for contract review and budget analysis.
+
+# Procedure Implementation: Fetching Supplier Contact Information
+
+The get_supplier_info procedure takes a supplier ID as input and safely retrieves the supplier’s name and contact number. It includes exception handling to manage common errors like an invalid ID.
+```SQL
+CREATE OR REPLACE PROCEDURE get_supplier_info(p_supplier_id IN NUMBER) IS
+    v_name suppliers.supplier_name%TYPE;
+    v_phone suppliers.contact_number%TYPE;
+BEGIN
+    SELECT supplier_name, contact_number
+    INTO v_name, v_phone
+    FROM suppliers
+    WHERE supplier_id = p_supplier_id;
+
+    DBMS_OUTPUT.PUT_LINE('Supplier Name: ' || v_name);
+    DBMS_OUTPUT.PUT_LINE('Contact Number: ' || v_phone);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No supplier found with ID ' || p_supplier_id);
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error retrieving supplier details: ' || SQLERRM);
+END;
+/
+```
+<img width="1919" height="1008" alt="image" src="https://github.com/user-attachments/assets/0a6c360b-6278-4bdf-80d0-6a9c564733e3" />
+
+# Procedure Call
+```sql
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    get_supplier_info(102); 
+END;
+/
+```
+
+<img width="1919" height="1004" alt="image" src="https://github.com/user-attachments/assets/0e4af285-b781-4f4d-941b-3512a7240a22" />
+
+# Implementation with Cursor: Listing Supplier Deliveries
+
+A cursor is used to efficiently loop through and display all delivery records for a specified supplier, which is crucial for logistics staff to review a vendor's delivery history
+```sql
+DECLARE
+    CURSOR c_supplier_deliveries IS
+        SELECT delivery_id, expected_date, delivery_date, status
+        FROM deliveries
+        WHERE supplier_id = 102; -- Using supplier 102 as an example
+        
+    v_delivery_rec c_supplier_deliveries%ROWTYPE;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Deliveries for Supplier 102 ---');
+    
+    OPEN c_supplier_deliveries;
+    LOOP
+        FETCH c_supplier_deliveries INTO v_delivery_rec;
+        EXIT WHEN c_supplier_deliveries%NOTFOUND;
+        
+        DBMS_OUTPUT.PUT_LINE('Delivery ID: ' || v_delivery_rec.delivery_id || 
+                            ', Expected: ' || v_delivery_rec.expected_date || 
+                            ', Actual: ' || NVL(TO_CHAR(v_delivery_rec.delivery_date, 'YYYY-MM-DD'), 'N/A') ||
+                            ', Status: ' || v_delivery_rec.status);
+    END LOOP;
+    CLOSE c_supplier_deliveries;
+END;
+/
+```
+
+# Function Implementation: Total Amount Paid to a Supplier
+
+A function is created to calculate the aggregate amount paid to a supplier, ensuring managers have a quick, accurate financial summary.
+```sql
+CREATE OR REPLACE FUNCTION total_amount_paid(p_supplier_id IN NUMBER) 
+RETURN NUMBER IS
+    v_total NUMBER;
+BEGIN
+    SELECT SUM(amount)
+    INTO v_total
+    FROM payments 
+    WHERE supplier_id = p_supplier_id
+    AND status = 'Paid'; 
+    
+    RETURN NVL(v_total, 0);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 0;
+    WHEN OTHERS THEN
+        RETURN -1; 
+END;
+/
+```
+<img width="1915" height="1010" alt="image" src="https://github.com/user-attachments/assets/b5a8a72c-291b-4f29-9139-b3c3ee1ec0dc" />
+
+# Testing the Function:
+```sql
+SELECT total_amount_paid(101) AS total_paid_to_supplier_101 FROM DUAL;
+```
+<img width="1919" height="1001" alt="image" src="https://github.com/user-attachments/assets/3e1c6838-9848-4ee2-ab49-27acb73c985f" />
+
+# Package Implementation: Supplier Tools
+
+The supplier_tools package logically groups related procedures and functions for managing supplier data, promoting code organization and reusability.
+```sql
+CREATE OR REPLACE PACKAGE supplier_tools AS
+    PROCEDURE list_deliveries(p_supplier_id IN NUMBER);
+    PROCEDURE display_payments(p_supplier_id IN NUMBER);
+    FUNCTION total_paid(p_supplier_id IN NUMBER) RETURN NUMBER;
+END supplier_tools;
+/
+
+CREATE OR REPLACE PACKAGE BODY supplier_tools AS
+    
+    PROCEDURE list_deliveries(p_supplier_id IN NUMBER) IS
+    BEGIN
+        FOR rec IN (
+            SELECT delivery_id, expected_date, delivery_date, status
+            FROM deliveries
+            WHERE supplier_id = p_supplier_id
+        ) LOOP
+            DBMS_OUTPUT.PUT_LINE('Delivery ID: ' || rec.delivery_id || 
+                                ', Expected: ' || rec.expected_date || 
+                                ', Status: ' || rec.status);
+        END LOOP;
+    END list_deliveries;
+
+    PROCEDURE display_payments(p_supplier_id IN NUMBER) IS
+    BEGIN
+        FOR rec IN (
+            SELECT payment_id, amount, due_date, status
+            FROM payments
+            WHERE supplier_id = p_supplier_id
+        ) LOOP
+            DBMS_OUTPUT.PUT_LINE('Payment ID: ' || rec.payment_id || 
+                                ', Amount: ' || rec.amount || 
+                                ', Due Date: ' || rec.due_date ||
+                                ', Status: ' || rec.status);
+        END LOOP;
+    END display_payments;
+
+    FUNCTION total_paid(p_supplier_id IN NUMBER) RETURN NUMBER IS
+        v_total NUMBER;
+    BEGIN
+        SELECT SUM(amount)
+        INTO v_total
+        FROM payments 
+        WHERE supplier_id = p_supplier_id AND status = 'Paid';
+        RETURN NVL(v_total, 0);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RETURN -1;
+    END total_paid;
+END supplier_tools;
+/
+```
+
+<img width="1919" height="1005" alt="image" src="https://github.com/user-attachments/assets/cffec088-7841-438f-930b-60f67bc2c900" />
+
+# Package Usage: Testing the Tools
+
+This final block demonstrates how a logistics or finance user would call the package to get a complete snapshot of a supplier's status.
+```sql
+DECLARE
+    v_paid_amount NUMBER;
+    v_supplier_id CONSTANT NUMBER := 102; 
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    
+    DBMS_OUTPUT.PUT_LINE('--- SUPPLIER ' || v_supplier_id || ' DELIVERY HISTORY ---');
+    supplier_tools.list_deliveries(v_supplier_id);
+    
+    DBMS_OUTPUT.PUT_LINE('--- SUPPLIER ' || v_supplier_id || ' PAYMENT HISTORY ---');
+    supplier_tools.display_payments(v_supplier_id);
+    
+    v_paid_amount := supplier_tools.total_paid(v_supplier_id);
+    DBMS_OUTPUT.PUT_LINE('TOTAL AMOUNT PAID TO SUPPLIER ' || v_supplier_id || ': ' || v_paid_amount);
+END;
+/
+```
+
+<img width="1918" height="1005" alt="image" src="https://github.com/user-attachments/assets/4685c1e5-ca4a-41de-adbe-bbfa459d8117" />
+
+# 🔒 PHASE VII: Advanced Programming & Auditing
+
