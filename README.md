@@ -505,6 +505,8 @@ BEGIN
 END;
 /
 ```
+<img width="1919" height="1010" alt="image" src="https://github.com/user-attachments/assets/8f8b61a2-766a-45f4-b83e-2b178f79e0aa" />
+
 This trigger directly implements the core business logic of Phase I automatically detecting and flagging delayed deliveries using simple date comparison.
 
 # Tracking Every Change (Auditing Trigger on Suppliers) 🛡️
@@ -550,6 +552,8 @@ EXCEPTION
 END;
 /
 ```
+<img width="1919" height="1003" alt="image" src="https://github.com/user-attachments/assets/f8df5d9a-93bd-4c4e-84d9-04e61dbe940f" />
+
 # Testing the Triggers: Let’s See If They Work! 🧪
 
 We test the triggers to prove they are correctly applying the business rules like superheroes.
@@ -586,6 +590,8 @@ UPDATE suppliers
 SET contact_number = '0789123456'
 WHERE supplier_id = 101;
 ```
+<img width="1914" height="997" alt="image" src="https://github.com/user-attachments/assets/d7c4ec97-0ec7-4418-9b3f-6b3fee125fed" />
+
 2. Check the Audit Log:
 ```sql
 SELECT user_id, operation, status, action_time FROM audit_logs;
