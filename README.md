@@ -1,6 +1,6 @@
 # PL/SQL Oracle Database Capstone Project
 
-# 📋 What’s This Project About? 🤔
+# 📋 What’s This Project About? 
 This project is a Supplier Payment and Delivery Monitoring System built with an Oracle database and PL/SQL. It automates the tracking of supplier orders, delivery dates, and payment schedules. The system automatically flags delayed shipments and overdue payments using database triggers and procedures. It also generates performance reports to help businesses identify reliable suppliers. The goal is to eliminate manual errors, ensure timely payments, and improve overall supply chain efficiency.
 
 **Name:** NTAKIRUTIMANA Kevin
@@ -11,18 +11,22 @@ This project is a Supplier Payment and Delivery Monitoring System built with an 
 
 **Group:** Wednesday
 
+**Lecturer:** Eric Maniraguha
+
+**Academic Year:** 2025-2026
+
 # PHASE I: Problem Statement & Presentation
 
 # 1. Problem definition
 
-•	Late Delivery 😣: A key supplier's shipment is late, but no one knows until it's already a problem. This stops production and hurts customer trust, all because of manual tracking.
+•	Late Delivery: A key supplier's shipment is late, but no one knows until it's already a problem. This stops production and hurts customer trust, all because of manual tracking.
 
-•	Payment Confusion 💸: Finance gets an invoice, but is it for a delivered order? Is it even overdue? Without a clear system, payments get delayed, and suppliers get frustrated.
+•	Payment Confusion: Finance gets an invoice, but is it for a delivered order? Is it even overdue? Without a clear system, payments get delayed, and suppliers get frustrated.
 
-•	No Supplier Report Card 🔍: Is Supplier A always on time? Is Supplier B often late? There's no easy way to track performance, so it's hard to know who your reliable partners are.
+•	No Supplier Report Card: Is Supplier A always on time? Is Supplier B often late? There's no easy way to track performance, so it's hard to know who your reliable partners are.
 
 
-# 2. Context: how the system will be used 🔄
+# 2. Context: how the system will be used 
 
 This system is designed for use by a company's Procurement and Finance departments. It acts as a central, automated platform to manage all interactions with suppliers. It helps track orders from the moment they are placed until the final payment is made, ensuring everything runs smoothly and on time.
 
@@ -334,6 +338,14 @@ END;
 /
 ```
 <img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/bfa797fa-8cbe-45a6-8bd1-d4c120d10423" />
+
+# Testing cursors
+```sql
+SELECT delivery_id, expected_date, delivery_date, status
+FROM deliveries
+WHERE supplier_id = 102;
+```
+<img width="1914" height="1005" alt="image" src="https://github.com/user-attachments/assets/4e17b708-50f0-4905-92d0-e5d7eae54900" />
 
 # Function Implementation: Total Amount Paid to a Supplier
 
