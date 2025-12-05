@@ -601,7 +601,7 @@ VALUES (9999, 101, 1, 50, TRUNC(SYSDATE + 7), TRUNC(SYSDATE));
 ```
 <img width="1919" height="1017" alt="testing trg_restrict_delivery_weekdays(holidays)" src="https://github.com/user-attachments/assets/2adb029e-ab7f-4390-b216-134e688b29e5" />
 
-The status column is automatically set to 'Delivered' by the trigger.
+**Results:** The trigger will automatically work because we are in weekend or public holiday. 
 
 # Testing the Auditing Trigger (on Suppliers)
 
