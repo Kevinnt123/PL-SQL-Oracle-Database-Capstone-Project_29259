@@ -1,0 +1,350 @@
+Supplier Payment and Delivery Monitoring System
+NTAKIRUTIMANA Kevin 29259
+Course: Database Development with PL/SQL
+
+
+PHASE V: Table Implementation & Data Insertion
+ 
+--create tables
+
+         CREATE TABLE suppliers (
+             supplier_id NUMBER(5) PRIMARY KEY,
+             supplier_name VARCHAR2(100) NOT NULL,
+             contact_number VARCHAR2(15),
+             email VARCHAR2(100),
+             address VARCHAR2(150)
+         );
+ 
+         CREATE TABLE products (
+             product_id NUMBER(5) PRIMARY KEY,
+             product_name VARCHAR2(100) NOT NULL,
+             unit_price DECIMAL(10, 2) NOT NULL CHECK (unit_price > 0),
+             supplier_id NUMBER(5) REFERENCES suppliers(supplier_id)
+         );
+ 
+         CREATE TABLE deliveries (
+             delivery_id NUMBER(5) PRIMARY KEY,
+             supplier_id NUMBER(5) REFERENCES suppliers(supplier_id),
+             product_id NUMBER(5) REFERENCES products(product_id),
+             quantity NUMBER(8),
+             expected_date DATE,
+             delivery_date DATE,
+             status VARCHAR2(20)
+                 CHECK (status IN ('Pending', 'Delayed', 'Delivered', 'Cancelled'))
+         );
+ 
+         CREATE TABLE payments (
+             payment_id NUMBER(5) PRIMARY KEY,
+             supplier_id NUMBER(5) REFERENCES suppliers(supplier_id),
+             amount DECIMAL(10, 2) NOT NULL CHECK (amount >= 0),
+             due_date DATE,
+             payment_date DATE,
+             status VARCHAR2(20)
+                 CHECK (status IN ('Due', 'Overdue', 'Paid', 'Partial'))
+         );
+
+--sample data
+
+         INSERT INTO suppliers VALUES (101, 'Alpha Supplies Ltd', '0788111222', 'alpha@supply.com', 'Kigali, KG 1');
+         INSERT INTO suppliers VALUES (102, 'Beta Electronics', '0788333444', 'beta@elec.com', 'Musanze, MS 2');
+ 
+         INSERT INTO products VALUES (1, 'Office Paper', 50.00, 101);
+         INSERT INTO products VALUES (2, 'Laptop Charger', 250.00, 102);
+ 
+         INSERT INTO deliveries VALUES (1001, 101, 1, 500, DATE '2025-12-01', DATE '2025-11-29', 'Delivered');
+         INSERT INTO deliveries VALUES (1002, 102, 2, 50, DATE '2025-12-05', NULL, 'Pending');
+ 
+         INSERT INTO payments VALUES (1, 101, 25000.00, DATE '2025-12-10', DATE '2025-12-08', 'Paid');
+         INSERT INTO payments VALUES (2, 102, 12500.00, DATE '2025-11-20', NULL, 'Due');
+
+
+PHASE VI: Database Interaction and Transactions
+
+Data Manipulation language (DML)
+
+--update supplier's email
+
+UPDATE suppliers SET email = 'beta.electronics.new@email.com' WHERE supplier_id = 102;
+
+DDL(Data Definition Language)
+
+CREATE TABLE supplier_reviews (
+    review_id NUMBER PRIMARY KEY,
+    supplier_id NUMBER REFERENCES suppliers(supplier_id)
+);
+
+DROP TABLE supplier_reviews;
+
+--window function
+
+SELECT 
+    supplier_id,
+    payment_id,
+    amount,
+    SUM(amount) OVER (PARTITION BY supplier_id ORDER BY payment_date) AS running_total
+FROM payments
+ORDER BY supplier_id, payment_date;
+
+--Procedure 
+
+CREATE OR REPLACE PROCEDURE get_supplier_info(p_supplier_id IN NUMBER) IS
+    v_name suppliers.supplier_name%TYPE;
+    v_phone suppliers.contact_number%TYPE;
+BEGIN
+    SELECT supplier_name, contact_number
+    INTO v_name, v_phone
+    FROM suppliers
+    WHERE supplier_id = p_supplier_id;
+
+    DBMS_OUTPUT.PUT_LINE('Supplier Name: ' || v_name);
+    DBMS_OUTPUT.PUT_LINE('Contact Number: ' || v_phone);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No supplier found with ID ' || p_supplier_id);
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error retrieving supplier details: ' || SQLERRM);
+END;
+/
+
+--Procedure call
+
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    get_supplier_info(102); 
+END;
+/
+
+--Cursor
+
+DECLARE
+    CURSOR c_supplier_deliveries IS
+        SELECT delivery_id, expected_date, delivery_date, status
+        FROM deliveries
+        WHERE supplier_id = 102; -- Using supplier 102 as an example
+        
+    v_delivery_rec c_supplier_deliveries%ROWTYPE;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Deliveries for Supplier 102 ---');
+    
+    OPEN c_supplier_deliveries;
+    LOOP
+        FETCH c_supplier_deliveries INTO v_delivery_rec;
+        EXIT WHEN c_supplier_deliveries%NOTFOUND;
+        
+        DBMS_OUTPUT.PUT_LINE('Delivery ID: ' || v_delivery_rec.delivery_id || 
+                            ', Expected: ' || v_delivery_rec.expected_date || 
+                            ', Actual: ' || NVL(TO_CHAR(v_delivery_rec.delivery_date, 'YYYY-MM-DD'), 'N/A') ||
+                            ', Status: ' || v_delivery_rec.status);
+    END LOOP;
+    CLOSE c_supplier_deliveries;
+END;
+/
+
+--Testing cursors
+
+SELECT delivery_id, expected_date, delivery_date, status
+FROM deliveries
+WHERE supplier_id = 102;
+
+--Function
+
+CREATE OR REPLACE FUNCTION total_amount_paid(p_supplier_id IN NUMBER) 
+RETURN NUMBER IS
+    v_total NUMBER;
+BEGIN
+    SELECT SUM(amount)
+    INTO v_total
+    FROM payments 
+    WHERE supplier_id = p_supplier_id
+    AND status = 'Paid'; 
+    
+    RETURN NVL(v_total, 0);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 0;
+    WHEN OTHERS THEN
+        RETURN -1; 
+END;
+/
+
+--Testing function
+
+SELECT total_amount_paid(101) AS total_paid_to_supplier_101 FROM DUAL;
+
+--Package
+
+CREATE OR REPLACE PACKAGE supplier_tools AS
+    PROCEDURE list_deliveries(p_supplier_id IN NUMBER);
+    PROCEDURE display_payments(p_supplier_id IN NUMBER);
+    FUNCTION total_paid(p_supplier_id IN NUMBER) RETURN NUMBER;
+END supplier_tools;
+/
+
+CREATE OR REPLACE PACKAGE BODY supplier_tools AS
+    
+    PROCEDURE list_deliveries(p_supplier_id IN NUMBER) IS
+    BEGIN
+        FOR rec IN (
+            SELECT delivery_id, expected_date, delivery_date, status
+            FROM deliveries
+            WHERE supplier_id = p_supplier_id
+        ) LOOP
+            DBMS_OUTPUT.PUT_LINE('Delivery ID: ' || rec.delivery_id || 
+                                ', Expected: ' || rec.expected_date || 
+                                ', Status: ' || rec.status);
+        END LOOP;
+    END list_deliveries;
+
+    PROCEDURE display_payments(p_supplier_id IN NUMBER) IS
+    BEGIN
+        FOR rec IN (
+            SELECT payment_id, amount, due_date, status
+            FROM payments
+            WHERE supplier_id = p_supplier_id
+        ) LOOP
+            DBMS_OUTPUT.PUT_LINE('Payment ID: ' || rec.payment_id || 
+                                ', Amount: ' || rec.amount || 
+                                ', Due Date: ' || rec.due_date ||
+                                ', Status: ' || rec.status);
+        END LOOP;
+    END display_payments;
+
+    FUNCTION total_paid(p_supplier_id IN NUMBER) RETURN NUMBER IS
+        v_total NUMBER;
+    BEGIN
+        SELECT SUM(amount)
+        INTO v_total
+        FROM payments 
+        WHERE supplier_id = p_supplier_id AND status = 'Paid';
+        RETURN NVL(v_total, 0);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RETURN -1;
+    END total_paid;
+END supplier_tools;
+/
+
+--Testing package
+
+DECLARE
+    v_paid_amount NUMBER;
+    v_supplier_id CONSTANT NUMBER := 102; 
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    
+    DBMS_OUTPUT.PUT_LINE('--- SUPPLIER ' || v_supplier_id || ' DELIVERY HISTORY ---');
+    supplier_tools.list_deliveries(v_supplier_id);
+    
+    DBMS_OUTPUT.PUT_LINE('--- SUPPLIER ' || v_supplier_id || ' PAYMENT HISTORY ---');
+    supplier_tools.display_payments(v_supplier_id);
+    
+    v_paid_amount := supplier_tools.total_paid(v_supplier_id);
+    DBMS_OUTPUT.PUT_LINE('TOTAL AMOUNT PAID TO SUPPLIER ' || v_supplier_id || ': ' || v_paid_amount);
+END;
+/
+
+--PHASE VII: Advanced Programming & Auditing
+
+--Table audit logs
+
+CREATE TABLE audit_logs (
+    audit_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id VARCHAR2(50),
+    action_time TIMESTAMP DEFAULT SYSTIMESTAMP,
+    operation VARCHAR2(50),
+    status VARCHAR2(20)
+);
+
+--Table Holidays
+
+CREATE TABLE holidays (
+    holiday_date DATE PRIMARY KEY,
+    description VARCHAR2(100)
+);
+
+--Trigger restrict delivery weekdays
+
+CREATE OR REPLACE TRIGGER trg_restrict_delivery_weekdays
+BEFORE INSERT OR UPDATE ON deliveries
+DECLARE
+    v_day VARCHAR2(10);
+    v_holiday_count NUMBER;
+BEGIN
+    v_day := TRIM(TO_CHAR(SYSDATE, 'DAY'));
+    
+    IF v_day IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Deliveries cannot be modified on weekdays.');
+    END IF;
+    
+    SELECT COUNT(*) INTO v_holiday_count
+    FROM holidays
+    WHERE TRUNC(holiday_date) = TRUNC(SYSDATE);
+    
+    IF v_holiday_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Today is a holiday. Delivery operations are not allowed.');
+    END IF;
+END;
+/
+/
+--Trigger audit supplier changes
+
+CREATE OR REPLACE TRIGGER trg_audit_supplier_changes
+AFTER INSERT OR UPDATE OR DELETE ON suppliers
+FOR EACH ROW
+DECLARE
+    v_operation VARCHAR2(50);
+BEGIN
+    IF INSERTING THEN
+        v_operation := 'INSERT_SUPPLIER';
+    ELSIF UPDATING THEN
+        v_operation := 'UPDATE_SUPPLIER';
+    ELSIF DELETING THEN
+        v_operation := 'DELETE_SUPPLIER';
+    END IF;
+    
+    INSERT INTO audit_logs(user_id, operation, status)
+    VALUES (USER, v_operation, 'Logged');
+END;
+/
+
+--Function Log Denied Actions
+
+CREATE OR REPLACE FUNCTION log_denied_action(p_action VARCHAR2)
+RETURN VARCHAR2 IS
+BEGIN
+    INSERT INTO audit_logs(user_id, operation, status)
+    VALUES (USER, p_action, 'Denied');
+    RETURN 'Logged';
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 'Failed to log: ' || SQLERRM;
+END;
+/
+
+--Testing trigger restrict delivery weekdays on weekdays
+
+INSERT INTO deliveries (delivery_id, supplier_id, product_id, quantity, expected_date, delivery_date)
+VALUES (3001, 102, 2, 10, TRUNC(SYSDATE - 1), NULL);
+
+--Testing trigger restrict delivery weekdays on holidays
+
+INSERT INTO deliveries (delivery_id, supplier_id, product_id, quantity, expected_date, delivery_date)
+VALUES (9999, 101, 1, 50, TRUNC(SYSDATE + 7), TRUNC(SYSDATE));
+
+--Testing the Auditing Trigger
+
+UPDATE suppliers
+SET contact_number = '0789123456'
+WHERE supplier_id = 101;
+
+--Checking the Audit Log
+
+SELECT user_id, operation, status, action_time FROM audit_logs;
+ 
+
+
+
+
+
+
