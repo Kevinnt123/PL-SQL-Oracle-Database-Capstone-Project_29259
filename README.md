@@ -56,7 +56,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Identify top-performing and underperforming suppliers for strategic decision-making.
 
-# PHASE II: Business Process Modeling📊
+# PHASE II: Business Process Modeling
 
 **Main component:**
 
@@ -70,7 +70,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Reporting: System generates monthly supplier performance reports via cursors.
 
-**MIS Functions** 💻:
+**MIS Functions**:
 
 •	Automates data validation and exception handling
 
@@ -78,7 +78,7 @@ This system is designed for use by a company's Procurement and Finance departmen
 
 •	Tracks supplier performance via predefined KPIs (e.g., on-time delivery rate, pending payments)
 
-**Organizational Impact** 🏢:
+**Organizational Impact**:
 
 •	Reduces manual errors
 
@@ -146,7 +146,7 @@ The design is intended to be in at least 3NF to minimize data duplication and en
 
 **3NF:** Non-key attributes depend only on the primary key, eliminating transitive dependencies (e.g., all supplier contact info resides only in the suppliers table, linked by supplier_id FK in other tables).
 
-# PHASE IV: Database Creation 🗄️
+# PHASE IV: Database Creation
 
 creating and configuring oracle pluggable database
 
@@ -497,27 +497,34 @@ CREATE TABLE holidays (
 ```
 <img width="1912" height="1003" alt="image" src="https://github.com/user-attachments/assets/4eaaf356-ed9c-4f03-9f99-9c456346a119" />
 
-# Smart Rule (Trigger): Automatic Delivery Status Update
+# Smart Rule (Trigger): trigger restrict delivery weekdays
 
-The most critical business rule for this project is identifying a Delayed Delivery. This simple trigger runs before any insertion or update on the deliveries table to automatically check the dates and update the status column.
+This kind of trigger spots changes such as adding, updating, or deleting deliveries on Mondays to Fridays and on holidays.
 ```sql
-CREATE OR REPLACE TRIGGER trg_check_delivery_status
+CREATE OR REPLACE TRIGGER trg_restrict_delivery_weekdays
 BEFORE INSERT OR UPDATE ON deliveries
-FOR EACH ROW
+DECLARE
+    v_day VARCHAR2(10);
+    v_holiday_count NUMBER;
 BEGIN
-    IF :NEW.delivery_date IS NULL AND :NEW.expected_date < TRUNC(SYSDATE) THEN
-        :NEW.status := 'Delayed';
+    v_day := TRIM(TO_CHAR(SYSDATE, 'DAY'));
     
-    ELSIF :NEW.delivery_date IS NOT NULL THEN
-        :NEW.status := 'Delivered';
-        
-    ELSE
-        :NEW.status := 'Pending';
+    IF v_day IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Deliveries cannot be modified on weekdays.');
+    END IF;
+    
+    SELECT COUNT(*) INTO v_holiday_count
+    FROM holidays
+    WHERE TRUNC(holiday_date) = TRUNC(SYSDATE);
+    
+    IF v_holiday_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Today is a holiday. Delivery operations are not allowed.');
     END IF;
 END;
 /
+/
 ```
-<img width="1919" height="1010" alt="image" src="https://github.com/user-attachments/assets/8f8b61a2-766a-45f4-b83e-2b178f79e0aa" />
+<img width="1918" height="1000" alt="trg_restrict_delivery_weekdays" src="https://github.com/user-attachments/assets/97935d51-7611-4a25-81af-370e08d149c3" />
 
 This trigger directly implements the core business logic of Phase I automatically detecting and flagging delayed deliveries using simple date comparison.
 
@@ -570,27 +577,29 @@ END;
 
 We test the triggers to prove they are correctly applying the business rules like superheroes.
 
-# Testing the Automatic Delivery Status Trigger
+# Testing the trigger restrict delivery weekdays
 
-1. **Test 1 (Delayed):** Insert a new delivery where the expected date was yesterday, but the actual delivery date is null.
+1. **Test 1:** Testing the trigger in weekdays 
+
+This kind of rule will stop me to make changes in weekdays
 
 * **Action:**
 ```sql
 INSERT INTO deliveries (delivery_id, supplier_id, product_id, quantity, expected_date, delivery_date)
 VALUES (3001, 102, 2, 10, TRUNC(SYSDATE - 1), NULL);
 ```
-<img width="1919" height="1004" alt="image" src="https://github.com/user-attachments/assets/1f269121-50a7-4901-989f-093c7956a413" />
+<img width="1915" height="982" alt="testing trg_restrict_delivery_weekdays(weekdays)" src="https://github.com/user-attachments/assets/ca82c33f-d82e-4771-b14a-8d63cfb98796" />
 
-Result: The status column in the deliveries table is automatically set to 'Delayed' by the trigger.
+Result: 'Deliveries cannot be modified on weekdays.' the trigger worked perfectly it stopped me from making changes in weekdays
 
-2. **Test 2 (Delivered):** Insert a new delivery that has already arrived.
+2. **Test 2 :** Testing the trigger in weekend
 
 *** Action:**
 ```sql
 INSERT INTO deliveries (delivery_id, supplier_id, product_id, quantity, expected_date, delivery_date)
-VALUES (3002, 101, 1, 50, TRUNC(SYSDATE + 7), TRUNC(SYSDATE));
+VALUES (9999, 101, 1, 50, TRUNC(SYSDATE + 7), TRUNC(SYSDATE));
 ```
-<img width="1919" height="1009" alt="image" src="https://github.com/user-attachments/assets/b5d19fdb-a156-46ea-a820-1cc72558eec0" />
+<img width="1919" height="1017" alt="testing trg_restrict_delivery_weekdays(holidays)" src="https://github.com/user-attachments/assets/2adb029e-ab7f-4390-b216-134e688b29e5" />
 
 The status column is automatically set to 'Delivered' by the trigger.
 
